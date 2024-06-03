@@ -16,7 +16,10 @@ class NativeWebSocket: NSObject, WebSocketProvider {
     private var socket: URLSessionWebSocketTask?
     private lazy var urlSession: URLSession = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
 
-    init(url: URL) {
+    init(url: URL ) {
+        debugPrint("url is ", url)
+        
+        
         self.url = url
         super.init()
     }
