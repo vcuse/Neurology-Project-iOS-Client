@@ -44,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             webSocketProvider = StarscreamWebSocket(url: self.config.signalingServerUrl)
         }
         
-        return SignalingClient(webSocket: webSocketProvider)
+        return SignalingClient(webSocket: webSocketProvider, url: self.config.signalingServerUrl)
     }
 }
 

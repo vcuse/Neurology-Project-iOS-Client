@@ -23,34 +23,44 @@ final class SignalingClient {
     private let webSocket: WebSocketProvider
     weak var delegate: SignalClientDelegate?
     
-    init(webSocket: WebSocketProvider) {
-        var uniqueID = ""
-        let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
-                                   port: 443,
-                                   path: "/",
-                                   key: "your_key_here",
-                                   secure: true)
+    init(webSocket: WebSocketProvider, url: URL) {
         
-        let api = API(options: options)
-        api.retrieveId { result in
-                    switch result {
-                    case .success(let id):
-                        
-                        uniqueID = id
-                        print("Retrieved ID:", uniqueID)
-                        
-                        
-                    case .failure(let error):
-                        print("Error retrieving ID:", error)
-                    }
-                }
-        
-        print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
         
         self.webSocket = webSocket
+        if #available(iOS 13.0, *) {
+            self.getAddress(url: url)
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
-    
+    @available(iOS 13.0, *)
+    func getAddress(url: URL) {
+        Task{
+            var uniqueID = ""
+            let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
+                                       port: 443,
+                                       path: "/",
+                                       key: "your_key_here",
+                                       secure: true)
+            
+            let api = API(options: options)
+            await api.retrieveId { result in
+                switch result {
+                case .success(let id):
+                    
+                    uniqueID = id
+                    print("Retrieved ID:", uniqueID)
+                    print("url is: ", url)
+                    
+                case .failure(let error):
+                    print("Error retrieving ID:", error)
+                }
+            }
+            
+            print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
+        }
+    }
     
     
     func connect() {

@@ -1,6 +1,7 @@
 import Foundation
 
 
+@available(iOS 13.0.0, *)
 class API {
     private let options: PeerJSOption
 
@@ -18,7 +19,7 @@ class API {
         return URLRequest(url: url)
     }
 
-    func retrieveId(completion: @escaping (Result<String, Error>) -> Void) {
+    func retrieveId(completion: @escaping (Result<String, Error>) -> Void) async {
         guard let request = buildRequest(method: "id") else {
             completion(.failure(NSError(domain: "com.yourapp.APIError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
