@@ -44,7 +44,8 @@ final class SignalingClient {
                                        key: "your_key_here",
                                        secure: true)
             
-            let api = API(options: options)
+            let api = API(options: options, url: url)
+            
             await api.retrieveId { result in
                 switch result {
                 case .success(let id):
@@ -52,11 +53,14 @@ final class SignalingClient {
                     uniqueID = id
                     print("Retrieved ID:", uniqueID)
                     print("url is: ", url)
-                    
+                    let newUrl = url.absoluteString + "/" + "peerjs?key=" + "&id=" + id
+
+                    print("new url is ", newUrl)
                 case .failure(let error):
                     print("Error retrieving ID:", error)
                 }
             }
+            
             
             print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
         }

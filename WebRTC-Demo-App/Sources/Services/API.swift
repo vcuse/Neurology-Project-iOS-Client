@@ -5,7 +5,7 @@ import Foundation
 class API {
     private let options: PeerJSOption
 
-    init(options: PeerJSOption) {
+    init(options: PeerJSOption, url: URL) {
         self.options = options
     }
 
@@ -43,12 +43,15 @@ class API {
 
             if let data = data, let id = String(data: data, encoding: .utf8) {
                 completion(.success(id))
+                
+                return
             } else {
                 completion(.failure(NSError(domain: "com.yourapp.APIError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid data"])))
             }
         }
 
         task.resume()
+        
     }
 
     // Add your listAllPeers() method here following a similar pattern
