@@ -23,20 +23,23 @@ final class SignalingClient {
     private let webSocket: WebSocketProvider
     weak var delegate: SignalClientDelegate?
     
-    init(webSocket: WebSocketProvider, url: URL) {
+    init(url: URL) {
         
         
-        self.webSocket = webSocket
+        
+        
+       
+        
         if #available(iOS 13.0, *) {
-            self.getAddress(url: url)
+            self.webSocket = NativeWebSocket(url: url)
         } else {
-            // Fallback on earlier versions
+            self.webSocket = StarscreamWebSocket(url: url)
         }
     }
     
     @available(iOS 13.0, *)
-    func getAddress(url: URL) {
-        Task{
+    func getAddress(url: URL) async -> String {
+        
             var uniqueID = ""
             let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
                                        port: 443,
@@ -52,18 +55,22 @@ final class SignalingClient {
                     
                     uniqueID = id
                     print("Retrieved ID:", uniqueID)
-                    print("url is: ", url)
+                    
                     let newUrl = url.absoluteString + "/" + "peerjs?key=" + "&id=" + id
-
+                    let test = NativeWebSocket(url: URL(string: newUrl)!)
+                    print("we made a test", test)
+                    
                     print("new url is ", newUrl)
+                    
                 case .failure(let error):
                     print("Error retrieving ID:", error)
+                    
                 }
             }
             
             
             print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
-        }
+        return ""
     }
     
     

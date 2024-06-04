@@ -54,5 +54,33 @@ class API {
         
     }
 
+    @available(iOS 13.0, *)
+    func getAddress(url: URL, completion: @escaping (String?, Error?) -> Void) async {
+
+        var uniqueID = ""
+        let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
+                                   port: 443,
+                                   path: "/",
+                                   key: "your_key_here",
+                                   secure: true)
+
+        let api = API(options: options, url: url)
+
+        await api.retrieveId { result in
+            switch result {
+            case .success(let id):
+                uniqueID = id
+                print("Retrieved ID:", uniqueID)
+
+                let newUrl = url.absoluteString + "/" + "peerjs?key=" + "&id=" + id
+                completion(newUrl, nil) // Pass newUrl to completion
+
+            case .failure(let error):
+                print("Error retrieving ID:", error)
+                completion(nil, error) // Pass error to completion
+            }
+        }
+    }
+
     // Add your listAllPeers() method here following a similar pattern
 }

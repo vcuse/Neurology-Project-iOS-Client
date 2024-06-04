@@ -110,7 +110,7 @@ class MainViewController: UIViewController {
         
         self.webRTCClient.delegate = self
         self.signalClient.delegate = self
-        self.signalClient.connect()
+        //self.signalClient.connect()
     }
     
     @IBAction private func offerDidTap(_ sender: UIButton) {

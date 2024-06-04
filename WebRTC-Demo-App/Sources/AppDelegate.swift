@@ -33,18 +33,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return navViewController
     }
     
+    
     private func buildSignalingClient() -> SignalingClient {
         
         // iOS 13 has native websocket support. For iOS 12 or lower we will use 3rd party library.
-        let webSocketProvider: WebSocketProvider
+//        let webSocketProvider: WebSocketProvider
+//        
+//        if #available(iOS 13.0, *) {
+//            webSocketProvider = NativeWebSocket(url: self.config.signalingServerUrl)
+//        } else {
+//            webSocketProvider = StarscreamWebSocket(url: self.config.signalingServerUrl)
+//        }
         
-        if #available(iOS 13.0, *) {
-            webSocketProvider = NativeWebSocket(url: self.config.signalingServerUrl)
-        } else {
-            webSocketProvider = StarscreamWebSocket(url: self.config.signalingServerUrl)
-        }
-        
-        return SignalingClient(webSocket: webSocketProvider, url: self.config.signalingServerUrl)
+        return SignalingClient(url: self.config.signalingServerUrl)
     }
 }
 
