@@ -21,6 +21,7 @@ class MainViewController: UIViewController {
     @IBOutlet private weak var localSdpStatusLabel: UILabel?
     @IBOutlet private weak var localCandidatesLabel: UILabel?
     @IBOutlet private weak var remoteSdpStatusLabel: UILabel?
+    @IBOutlet private weak var uuidField: UITextField?
     @IBOutlet private weak var remoteCandidatesLabel: UILabel?
     @IBOutlet private weak var muteButton: UIButton?
     @IBOutlet private weak var webRTCStatusLabel: UILabel?
@@ -107,13 +108,19 @@ class MainViewController: UIViewController {
         self.remoteCandidateCount = 0
         self.speakerOn = false
         self.webRTCStatusLabel?.text = "New"
-        
+        self.uuidField?.delegate = self
         self.webRTCClient.delegate = self
         self.signalClient.delegate = self
-        //self.signalClient.connect()
+        
+        
     }
     
     @IBAction private func offerDidTap(_ sender: UIButton) {
+        
+        debugPrint("value in textbox: \(uuidField?.text ?? "No value")")
+        
+        
+        
         self.webRTCClient.offer { (sdp) in
             self.hasLocalSdp = true
             self.signalClient.send(sdp: sdp)
@@ -192,6 +199,15 @@ extension MainViewController: SignalClientDelegate {
         }
     }
 }
+
+extension MainViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        uuidField?.text = textField.text
+        return true
+    }
+}
+
 
 extension MainViewController: WebRTCClientDelegate {
     
