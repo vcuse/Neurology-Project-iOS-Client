@@ -25,51 +25,50 @@ final class SignalingClient {
     
     init(url: URL) {
         
-        
-        
-        
-       
-        
         if #available(iOS 13.0, *) {
             self.webSocket = NativeWebSocket(url: url)
         } else {
             self.webSocket = StarscreamWebSocket(url: url)
         }
+        if #available(iOS 13.0, *) {
+            let x = self.getAddress(url: url)
+            print("addy is ", x)
+        } else {
+            // Fallback on earlier versions
+        }
     }
     
     @available(iOS 13.0, *)
-    func getAddress(url: URL) async -> String {
+    func getAddress(url: URL) -> String {
         
-            var uniqueID = ""
+            //var uniqueID = ""
             let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
                                        port: 443,
                                        path: "/",
                                        key: "your_key_here",
                                        secure: true)
             
-            let api = API(options: options, url: url)
-            
-            await api.retrieveId { result in
-                switch result {
-                case .success(let id):
-                    
-                    uniqueID = id
-                    print("Retrieved ID:", uniqueID)
-                    
-                    let newUrl = url.absoluteString + "/" + "peerjs?key=" + "&id=" + id
-                    let test = NativeWebSocket(url: URL(string: newUrl)!)
-                    print("we made a test", test)
-                    
-                    print("new url is ", newUrl)
-                    
-                case .failure(let error):
-                    print("Error retrieving ID:", error)
-                    
-                }
+        let api = API(options: options, url: url)
+        print(api.self)
+        Task {
+            await api.getAddress(url:url) { newUrl, error in
+                if let error = error {
+                                print("Error retrieving address: \(error)")
+                                // Handle the error in your API (e.g., return an error response)
+                            } else if let newUrl = newUrl {
+                                // Use the new URL in your API logic
+                                print("Received new URL from getAddress: \(newUrl)")
+                                guard let url = URL(string: newUrl) else { return }
+                                let socket = NativeWebSocket(url: url)
+
+                                socket.connect()
+                                
+
+                            }
             }
+        }
             
-            
-            print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
+            //print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
         return ""
     }
     

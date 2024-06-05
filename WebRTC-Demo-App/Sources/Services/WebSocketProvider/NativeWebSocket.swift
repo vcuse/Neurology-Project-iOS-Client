@@ -25,6 +25,8 @@ class NativeWebSocket: NSObject, WebSocketProvider {
     }
 
     func connect() {
+        
+        
         debugPrint("WE ARE CONNECTING WITH URL", url)
         let socket = urlSession.webSocketTask(with: url)
         socket.resume()
@@ -46,7 +48,7 @@ class NativeWebSocket: NSObject, WebSocketProvider {
                 self.readMessage()
                 
             case .success:
-                debugPrint("Warning: Expected to receive data format but received a string. Check the websocket server config.")
+                debugPrint("Warning: Expected to receive data format but received a string. Check the websocket server config.", message)
                 self.readMessage()
 
             case .failure:
