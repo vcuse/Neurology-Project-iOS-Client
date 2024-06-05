@@ -72,7 +72,7 @@ class API {
                 uniqueID = id
                 print("Retrieved ID:", uniqueID)
 
-                let newUrl = url.absoluteString + "/" + "peerjs?key=" + "&id=" + id
+                let newUrl = url.absoluteString + "/" + "peerjs?key=peerjs" + "&id=" + id + "&token=435345"
                 completion(newUrl, nil) // Pass newUrl to completion
                 debugPrint("we sent a newURL from API:", newUrl)
                 return

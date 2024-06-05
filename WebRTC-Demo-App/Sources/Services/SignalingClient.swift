@@ -20,7 +20,7 @@ final class SignalingClient {
     
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
-    private let webSocket: WebSocketProvider
+    private var webSocket: WebSocketProvider
     weak var delegate: SignalClientDelegate?
     
     init(url: URL) {
@@ -59,9 +59,8 @@ final class SignalingClient {
                                 // Use the new URL in your API logic
                                 print("Received new URL from getAddress: \(newUrl)")
                                 guard let url = URL(string: newUrl) else { return }
-                                let socket = NativeWebSocket(url: url)
-
-                                socket.connect()
+                                self.webSocket = NativeWebSocket(url: url)
+                                self.connect()
                                 
 
                             }

@@ -45,6 +45,7 @@ class NativeWebSocket: NSObject, WebSocketProvider {
             switch message {
             case .success(.data(let data)):
                 self.delegate?.webSocket(self, didReceiveData: data)
+                debugPrint("message from server", message)
                 self.readMessage()
                 
             case .success:
