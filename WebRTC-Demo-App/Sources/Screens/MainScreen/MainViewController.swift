@@ -120,7 +120,6 @@ class MainViewController: UIViewController {
         debugPrint("value in textbox: \(uuidField?.text ?? "No value")")
         
         
-        
         self.webRTCClient.offer { (sdp) in
             self.hasLocalSdp = true
             self.signalClient.send(sdp: sdp)
@@ -128,6 +127,9 @@ class MainViewController: UIViewController {
     }
     
     @IBAction private func answerDidTap(_ sender: UIButton) {
+        
+        debugPrint("you hit the answer button")
+        
         self.webRTCClient.answer { (localSdp) in
             self.hasLocalSdp = true
             self.signalClient.send(sdp: localSdp)

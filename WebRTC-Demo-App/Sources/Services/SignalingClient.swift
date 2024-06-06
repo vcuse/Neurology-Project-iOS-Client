@@ -21,6 +21,7 @@ final class SignalingClient {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
     private var webSocket: WebSocketProvider
+    
     weak var delegate: SignalClientDelegate?
     
     init(url: URL) {
@@ -31,15 +32,15 @@ final class SignalingClient {
             self.webSocket = StarscreamWebSocket(url: url)
         }
         if #available(iOS 13.0, *) {
-            let x = self.getAddress(url: url)
-            print("addy is ", x)
+            self.getAddress(url: url)
+            
         } else {
             // Fallback on earlier versions
         }
     }
     
     @available(iOS 13.0, *)
-    func getAddress(url: URL) -> String {
+    func getAddress(url: URL) -> Void {
         
             //var uniqueID = ""
             let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
@@ -68,7 +69,7 @@ final class SignalingClient {
         }
             
             //print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
-        return ""
+     
     }
     
     
@@ -81,7 +82,7 @@ final class SignalingClient {
         let message = Message.sdp(SessionDescription(from: rtcSdp))
         do {
             let dataMessage = try self.encoder.encode(message)
-            
+            debugPrint("sent message ", message)
             self.webSocket.send(data: dataMessage)
         }
         catch {
@@ -121,6 +122,7 @@ extension SignalingClient: WebSocketProviderDelegate {
         let message: Message
         do {
             message = try self.decoder.decode(Message.self, from: data)
+            debugPrint("messager is ", message)
         }
         catch {
             debugPrint("Warning: Could not decode incoming message: \(error)")

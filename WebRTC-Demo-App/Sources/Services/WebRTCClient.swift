@@ -6,8 +6,16 @@
 //  Copyright © 2018 Stasel. All rights reserved.
 //
 
+
 import Foundation
 import WebRTC
+
+struct Server2Message {
+    let type: ServerMessageType
+    let payload: String
+    let dst: String
+}
+
 
 protocol WebRTCClientDelegate: AnyObject {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate)
@@ -53,14 +61,16 @@ final class WebRTCClient: NSObject {
         // gatherContinually will let WebRTC to listen to any network changes and send any new candidates to the other client
         config.continualGatheringPolicy = .gatherContinually
         
+        
         // Define media constraints. DtlsSrtpKeyAgreement is required to be true to be able to connect with web browsers.
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil,
                                               optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
         
         guard let peerConnection = WebRTCClient.factory.peerConnection(with: config, constraints: constraints, delegate: nil) else {
+            debugPrint("peerconnection failed")
             fatalError("Could not create new RTCPeerConnection")
         }
-        
+        debugPrint("webrtc made")
         self.peerConnection = peerConnection
         
         super.init()
@@ -73,11 +83,14 @@ final class WebRTCClient: NSObject {
     func offer(completion: @escaping (_ sdp: RTCSessionDescription) -> Void) {
         let constrains = RTCMediaConstraints(mandatoryConstraints: self.mediaConstrains,
                                              optionalConstraints: nil)
+        
+        debugPrint("constrains are ", constrains as Any)
         self.peerConnection.offer(for: constrains) { (sdp, error) in
             guard let sdp = sdp else {
+                debugPrint("we are in the answer of webrtc error", sdp as Any)
                 return
             }
-            
+            debugPrint("we are in the answer of webrtc error", sdp as Any)
             self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
                 completion(sdp)
             })
@@ -85,15 +98,22 @@ final class WebRTCClient: NSObject {
     }
     
     func answer(completion: @escaping (_ sdp: RTCSessionDescription) -> Void)  {
+        
+        
         let constrains = RTCMediaConstraints(mandatoryConstraints: self.mediaConstrains,
                                              optionalConstraints: nil)
+        debugPrint("constrains are ", constrains as Any)
         self.peerConnection.answer(for: constrains) { (sdp, error) in
             guard let sdp = sdp else {
+                //debugPrint("we are in the answer of webrtc error", sdp as Any)
                 return
             }
-            
+            debugPrint("we are in the answer of webrtc", sdp as Any)
             self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
+                debugPrint("we are in the answer of webrtc")
                 completion(sdp)
+                
+                
             })
         }
     }

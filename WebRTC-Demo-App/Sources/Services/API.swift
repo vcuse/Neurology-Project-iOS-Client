@@ -74,7 +74,7 @@ class API {
 
                 let newUrl = url.absoluteString + "/" + "peerjs?key=peerjs" + "&id=" + id + "&token=435345"
                 completion(newUrl, nil) // Pass newUrl to completion
-                debugPrint("we sent a newURL from API:", newUrl)
+                //debugPrint("we sent a newURL from API:", newUrl)
                 return
             case .failure(let error):
                 print("Error retrieving ID:", error)

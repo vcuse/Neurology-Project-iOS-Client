@@ -17,7 +17,7 @@ class NativeWebSocket: NSObject, WebSocketProvider {
     private lazy var urlSession: URLSession = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
 
     init(url: URL ) {
-        debugPrint("url is ", url)
+        //debugPrint("url is ", url)
         
         
         self.url = url
@@ -45,15 +45,24 @@ class NativeWebSocket: NSObject, WebSocketProvider {
             switch message {
             case .success(.data(let data)):
                 self.delegate?.webSocket(self, didReceiveData: data)
-                debugPrint("message from server", message)
+                //debugPrint("message from server", message)
                 self.readMessage()
-                
-            case .success:
-                debugPrint("Warning: Expected to receive data format but received a string. Check the websocket server config.", message)
-                self.readMessage()
-
             case .failure:
                 self.disconnect()
+            case .success(let message):
+                        if case let .string(messageString) = message {
+                            // Print only the message string
+                            print("Received message:", messageString)
+                            
+                            
+                            // Now you can parse the messageString as needed
+                            // For example, you can parse it as JSON to extract the type, payload, etc.
+                        } else {
+                            print("Unexpected message type:", message)
+                        }
+                        
+                        // Continue reading messages
+                        self.readMessage()
             }
         }
     }
@@ -73,5 +82,25 @@ extension NativeWebSocket: URLSessionWebSocketDelegate, URLSessionDelegate  {
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         self.disconnect()
+    }
+}
+
+// Define the equivalent of ServerMessageType enum
+enum ServerMessageType: String {
+    case answer = "ANSWER"
+    case candidate = "CANDIDATE"
+    // Add other message types as needed
+}
+
+// Define the ServerMessage class
+class ServerMessage {
+    let type: ServerMessageType
+    let payload: Any // Use appropriate type for payload
+    let src: String
+
+    init(type: ServerMessageType, payload: Any, src: String) {
+        self.type = type
+        self.payload = payload
+        self.src = src
     }
 }
