@@ -90,7 +90,7 @@ final class WebRTCClient: NSObject {
                 debugPrint("we are in the answer of webrtc error", sdp as Any)
                 return
             }
-            debugPrint("we are in the answer of webrtc error", sdp as Any)
+            debugPrint("we are in the offer of webrtc ", sdp as Any)
             self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
                 completion(sdp)
             })
@@ -103,9 +103,11 @@ final class WebRTCClient: NSObject {
         let constrains = RTCMediaConstraints(mandatoryConstraints: self.mediaConstrains,
                                              optionalConstraints: nil)
         debugPrint("constrains are ", constrains as Any)
+        
+        
         self.peerConnection.answer(for: constrains) { (sdp, error) in
             guard let sdp = sdp else {
-                //debugPrint("we are in the answer of webrtc error", sdp as Any)
+                debugPrint("we are in the answer of webrtc error", sdp as Any)
                 return
             }
             debugPrint("we are in the answer of webrtc", sdp as Any)

@@ -52,9 +52,17 @@ class NativeWebSocket: NSObject, WebSocketProvider {
             case .success(let message):
                         if case let .string(messageString) = message {
                             // Print only the message string
-                            print("Received message:", messageString)
+                            //print("Received message:", messageString)
                             
-                            
+                            if let (messageType, payload, src) = processReceivedMessage(message: messageString) {
+                                // Use messageType, payload, and src as needed
+                                print("Processed message type:", messageType)
+                                print("Processed payload:", payload)
+                                print("Processed source:", src)
+                            } else {
+                                print("Failed to process received message")
+                            }
+                            //make a way to handle the messages
                             // Now you can parse the messageString as needed
                             // For example, you can parse it as JSON to extract the type, payload, etc.
                         } else {
@@ -73,6 +81,56 @@ class NativeWebSocket: NSObject, WebSocketProvider {
         self.delegate?.webSocketDidDisconnect(self)
     }
 }
+
+func processReceivedMessage(message: String) -> (String, [String: Any], String)? {
+    // Print the received message
+    print("Received message:", message)
+    
+    // Initialize variables to hold extracted information
+    var messageType = ""
+    var payload = [String: Any]()
+    var src = ""
+    
+    // Convert the JSON string to data
+    guard let jsonData = message.data(using: .utf8) else {
+        print("Error converting message to data")
+        return nil
+    }
+    
+    do {
+        // Deserialize the JSON data into a dictionary
+        if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
+            // Access the 'type', 'payload', and 'src' fields from the dictionary
+            if let extractedMessageType = json["type"] as? String,
+               let extractedPayload = json["payload"] as? [String: Any],
+               let extractedSrc = json["src"] as? String {
+                // Assign extracted values to variables
+                messageType = extractedMessageType
+                payload = extractedPayload
+                src = extractedSrc
+                
+                // Print extracted information
+                print("Message type:", messageType)
+                print("Payload:", payload)
+                print("Source:", src)
+            } else {
+                print("Error: Missing 'type', 'payload', or 'src' field(s) in the message")
+                return nil
+            }
+        } else {
+            print("Error: Failed to deserialize JSON")
+            return nil
+        }
+    } catch {
+        print("Error deserializing JSON:", error)
+        return nil
+    }
+    
+    // Return the extracted information as a tuple
+    return (messageType, payload, src)
+}
+
+
 
 @available(iOS 13.0, *)
 extension NativeWebSocket: URLSessionWebSocketDelegate, URLSessionDelegate  {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		082047EF2C136A98001B413C /* Peer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082047EE2C136A98001B413C /* Peer.swift */; };
 		0864FFB02C0E412E00EBA174 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864FFAF2C0E412E00EBA174 /* API.swift */; };
 		0864FFB22C0E41A400EBA174 /* PeerJSOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864FFB12C0E41A400EBA174 /* PeerJSOption.swift */; };
 		2F0D643D26FC644100CB9A47 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0D643C26FC644100CB9A47 /* WebRTC */; };
@@ -31,6 +32,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		082047EE2C136A98001B413C /* Peer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Peer.swift; sourceTree = "<group>"; };
 		0864FFAF2C0E412E00EBA174 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		0864FFB12C0E41A400EBA174 /* PeerJSOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerJSOption.swift; sourceTree = "<group>"; };
 		2F58B5FE2BD5A4C700A8F001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -172,6 +174,7 @@
 				79177C9620B0DE7A00BCD399 /* WebRTCClient.swift */,
 				795A4A29221E0FB100F8BB03 /* Message.swift */,
 				0864FFAF2C0E412E00EBA174 /* API.swift */,
+				082047EE2C136A98001B413C /* Peer.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				79262EE920B0D6F600D576C1 /* MainViewController.swift in Sources */,
+				082047EF2C136A98001B413C /* Peer.swift in Sources */,
 				792198A222011A450051F03F /* Config.swift in Sources */,
 				79177CA820B2276400BCD399 /* VideoViewController.swift in Sources */,
 				79262EE720B0D6F600D576C1 /* AppDelegate.swift in Sources */,
