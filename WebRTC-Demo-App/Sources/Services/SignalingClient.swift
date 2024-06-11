@@ -149,14 +149,24 @@ extension SignalingClient: WebSocketProviderDelegate {
         if let (messageType, payload, src) = processReceivedMessage(message: message) {
             // Use messageType, payload, and src as needed
             print("Processed message type:", messageType)
-            let msg = payload["sdp"] as? [String: Any]
-            let sdp = msg?["sdp"]
-            print("Processed sdp:", sdp as Any)
+            if(messageType == "OFFER"){
+                let msg = payload["sdp"] as? [String: Any]
+                let sdp = msg?["sdp"]
+                print("Processed sdp:", sdp as Any)
+                createCandidateRTC(self.webSocket, sdp: sdp as! String)
+            }
 
             print("Processed source:", src)
         } else {
             print("Failed to process received message")
         }
+    }
+    
+    func createCandidateRTC(_ webSocket: WebSocketProvider, sdp: String){
+        let candidate = RTCIceCandidate(sdp: sdp, sdpMLineIndex: 0,
+                                        sdpMid: "video")
+        
+        print(candidate.sdp)
     }
     
     func processReceivedMessage(message: String) -> (String, [String: Any], String)? {
