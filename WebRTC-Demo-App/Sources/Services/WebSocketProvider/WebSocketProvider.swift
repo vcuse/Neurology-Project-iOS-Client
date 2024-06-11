@@ -18,4 +18,6 @@ protocol WebSocketProviderDelegate: AnyObject {
     func webSocketDidConnect(_ webSocket: WebSocketProvider)
     func webSocketDidDisconnect(_ webSocket: WebSocketProvider)
     func webSocket(_ webSocket: WebSocketProvider, didReceiveData data: Data)
+    func handleMessage(message: String)
+    func processReceivedMessage(message: String) -> (String, [String: Any], String)?
 }
