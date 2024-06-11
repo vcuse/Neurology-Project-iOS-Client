@@ -57,7 +57,9 @@ class NativeWebSocket: NSObject, WebSocketProvider {
                             if let (messageType, payload, src) = processReceivedMessage(message: messageString) {
                                 // Use messageType, payload, and src as needed
                                 print("Processed message type:", messageType)
-                                print("Processed payload:", payload)
+                                let msg = payload["sdp"] as? [String: Any]
+                                let sdp = msg?["sdp"]
+                                print("Processed sdp:", sdp as Any)
                                 print("Processed source:", src)
                             } else {
                                 print("Failed to process received message")
