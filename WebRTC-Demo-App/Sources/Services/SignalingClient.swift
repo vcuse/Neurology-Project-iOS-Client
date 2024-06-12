@@ -8,7 +8,7 @@
 
 import Foundation
 import WebRTC
-
+private let config = Config.default
 protocol SignalClientDelegate: AnyObject {
     func signalClientDidConnect(_ signalClient: SignalingClient)
     func signalClientDidDisconnect(_ signalClient: SignalingClient)
@@ -17,15 +17,16 @@ protocol SignalClientDelegate: AnyObject {
 }
 
 final class SignalingClient {
-    
+    private let config = Config.default
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
     private var webSocket: WebSocketProvider
+    private var webRTCClient: WebRTCClient
     
     weak var delegate: SignalClientDelegate?
     
     init(url: URL) {
-        
+        self.webRTCClient = WebRTCClient.init(iceServers: config.webRTCIceServers)
         if #available(iOS 13.0, *) {
             self.webSocket = NativeWebSocket(url: url)
         } else {
@@ -153,7 +154,15 @@ extension SignalingClient: WebSocketProviderDelegate {
                 let msg = payload["sdp"] as? [String: Any]
                 let sdp = msg?["sdp"]
                 print("Processed sdp:", sdp as Any)
-                createCandidateRTC(self.webSocket, sdp: sdp as! String)
+                let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
+                if #available(iOS 13.0, *) {
+                    Task {
+                        await self.webRTCClient.setPeerSDP(sessionDescription)
+                        
+                    }
+                } else {
+                    // Fallback on earlier versions
+                }
             }
 
             print("Processed source:", src)
@@ -164,11 +173,26 @@ extension SignalingClient: WebSocketProviderDelegate {
     
     func createCandidateRTC(_ webSocket: WebSocketProvider, sdp: String){
         let candidate = RTCIceCandidate(sdp: sdp, sdpMLineIndex: 0,
-                                        sdpMid: "video")
+                                        sdpMid: "0")
         
-        print(candidate.sdp)
+        print("CANDIDATE SDP:", candidate)
+        setRTCIceCandidate(candidate: candidate)
+        
+        
+        
     }
-    
+    func setRTCIceCandidate(candidate rtcIceCandidate: RTCIceCandidate){
+        let message = Message.candidate(IceCandidate(from: rtcIceCandidate))
+        do{
+            
+            let dataMessage = try self.encoder.encode(message)
+            debugPrint("INFO: Sent Candiate Message:", message)
+            self.webSocket.send(data: dataMessage)
+        }
+        catch {
+                debugPrint("Warning: Could not encode candidate: \(error)")
+            }
+    }
     func processReceivedMessage(message: String) -> (String, [String: Any], String)? {
         // Print the received message
         print("Received message:", message)

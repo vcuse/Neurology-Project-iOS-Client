@@ -91,10 +91,24 @@ final class WebRTCClient: NSObject {
                 return
             }
             debugPrint("we are in the offer of webrtc ", sdp as Any)
-            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
-                completion(sdp)
-            })
+            //self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
+                //completion(sdp)
+            //})
         }
+    }
+    
+    @available(iOS 13.0.0, *)
+    func setPeerSDP(_ remoteOffer: RTCSessionDescription) async  {
+        
+        do {
+            debugPrint("remote description:", remoteOffer.description)
+               try await self.peerConnection.setRemoteDescription(remoteOffer)
+            
+            //_ = answer
+            
+           } catch {
+               debugPrint("error in setting peersdp", error)
+           }
     }
     
     func answer(completion: @escaping (_ sdp: RTCSessionDescription) -> Void)  {
@@ -105,27 +119,27 @@ final class WebRTCClient: NSObject {
         debugPrint("constrains are ", constrains as Any)
         
         
-        self.peerConnection.answer(for: constrains) { (sdp, error) in
-            guard let sdp = sdp else {
-                debugPrint("we are in the answer of webrtc error", sdp as Any)
-                return
-            }
-            debugPrint("we are in the answer of webrtc", sdp as Any)
-            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
-                debugPrint("we are in the answer of webrtc")
-                completion(sdp)
-                
-                
-            })
-        }
+//        self.peerConnection.answer(for: constrains) { (sdp, error) in
+//            guard let sdp = sdp else {
+//                debugPrint("we are in the answer of webrtc error", error as Any)
+//                return
+//            }
+//            debugPrint("we are in the answer of webrtc", sdp as Any)
+//            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
+//                debugPrint("we are in the answer of webrtc")
+//                completion(sdp)
+//                
+//                
+//            })
+//        }
     }
     
     func set(remoteSdp: RTCSessionDescription, completion: @escaping (Error?) -> ()) {
-        self.peerConnection.setRemoteDescription(remoteSdp, completionHandler: completion)
+        //self.peerConnection.setRemoteDescription(remoteSdp, completionHandler: completion)
     }
     
     func set(remoteCandidate: RTCIceCandidate, completion: @escaping (Error?) -> ()) {
-        self.peerConnection.add(remoteCandidate, completionHandler: completion)
+        //self.peerConnection.add(remoteCandidate, completionHandler: completion)
     }
     
     // MARK: Media
