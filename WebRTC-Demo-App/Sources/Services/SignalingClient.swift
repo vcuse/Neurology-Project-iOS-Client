@@ -157,9 +157,23 @@ extension SignalingClient: WebSocketProviderDelegate {
                 let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
                 if #available(iOS 13.0, *) {
                     Task {
-                        await self.webRTCClient.setPeerSDP(sessionDescription)
-                        
-                    }
+                                    await self.webRTCClient.setPeerSDP(sessionDescription, src) { connectionMessage in
+                                        if let connectionMessage = connectionMessage {
+                                            // Use connectionMessage here
+                                            print("Connection message:", connectionMessage)
+                                            do{
+                                                let jsonData = try JSONSerialization.data(withJSONObject: connectionMessage)
+                                                
+                                                self.webSocket.send(data: jsonData)
+                                            }
+                                            catch{
+                                                print("error with json", error)
+                                            }
+                                        } else {
+                                            print("Error: Could not set peer SDP")
+                                        }
+                                    }
+                                }
                 } else {
                     // Fallback on earlier versions
                 }

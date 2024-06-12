@@ -38,6 +38,8 @@ class NativeWebSocket: NSObject, WebSocketProvider {
         self.socket?.send(.data(data)) { _ in }
     }
     
+
+    
     private func readMessage()  {
         self.socket?.receive { [weak self] message in
             guard let self = self else { return }

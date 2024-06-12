@@ -91,24 +91,45 @@ final class WebRTCClient: NSObject {
                 return
             }
             debugPrint("we are in the offer of webrtc ", sdp as Any)
-            //self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
-                //completion(sdp)
-            //})
+            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
+                
+                completion(sdp)
+            })
         }
     }
     
     @available(iOS 13.0.0, *)
-    func setPeerSDP(_ remoteOffer: RTCSessionDescription) async  {
+    func setPeerSDP(_ remoteOffer: RTCSessionDescription,_ source: String, completion: @escaping ([String: Any]?)-> Void) async  {
         
         do {
             debugPrint("remote description:", remoteOffer.description)
                try await self.peerConnection.setRemoteDescription(remoteOffer)
             
-            //_ = answer
+            answer { sdp in
+                debugPrint("Our answer SDP is:", sdp)
+                
+                let payload: [String: Any] = [
+                    "sdp": sdp.sdp,
+                                "type": "ANSWER",
+                                "connectionId": "testConnectionID"
+                            ]
+                
+                let message: [String: Any] = [
+                                "type": "ANSWER",
+                                "payload": payload,
+                                "dst": source
+                            ]
+                completion(message)
+            }
+          
             
            } catch {
                debugPrint("error in setting peersdp", error)
            }
+    }
+    
+    private func makeAnswer(){
+        
     }
     
     func answer(completion: @escaping (_ sdp: RTCSessionDescription) -> Void)  {
@@ -116,22 +137,22 @@ final class WebRTCClient: NSObject {
         
         let constrains = RTCMediaConstraints(mandatoryConstraints: self.mediaConstrains,
                                              optionalConstraints: nil)
-        debugPrint("constrains are ", constrains as Any)
+        //debugPrint("constrains are ", constrains as Any)
         
         
-//        self.peerConnection.answer(for: constrains) { (sdp, error) in
-//            guard let sdp = sdp else {
-//                debugPrint("we are in the answer of webrtc error", error as Any)
-//                return
-//            }
-//            debugPrint("we are in the answer of webrtc", sdp as Any)
-//            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
-//                debugPrint("we are in the answer of webrtc")
-//                completion(sdp)
-//                
-//                
-//            })
-//        }
+        self.peerConnection.answer(for: constrains) { (sdp, error) in
+            guard let sdp = sdp else {
+                //debugPrint("we are in the answer of webrtc error", error as Any)
+                return
+            }
+            debugPrint("we are in the answer of webrtc", sdp as Any)
+            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
+                //debugPrint("we are in the answer of webrtc")
+                completion(sdp)
+                
+                
+            })
+        }
     }
     
     func set(remoteSdp: RTCSessionDescription, completion: @escaping (Error?) -> ()) {
