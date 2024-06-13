@@ -210,7 +210,7 @@ extension MainViewController: WebRTCClientDelegate {
     func webRTCClient(_ client: WebRTCClient, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
         print("discovered local candidate")
         self.localCandidateCount += 1
-        self.signalClient.send(candidate: candidate)
+        //self.signalClient.send(candidate: candidate)
     }
     
     func webRTCClient(_ client: WebRTCClient, didChangeConnectionState state: RTCIceConnectionState) {

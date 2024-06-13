@@ -27,7 +27,7 @@ class NativeWebSocket: NSObject, WebSocketProvider {
     func connect() {
         
         
-        debugPrint("WE ARE CONNECTING WITH URL", url)
+        //debugPrint("WE ARE CONNECTING WITH URL", url)
         let socket = urlSession.webSocketTask(with: url)
         socket.resume()
         self.socket = socket

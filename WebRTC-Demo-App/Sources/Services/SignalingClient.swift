@@ -22,11 +22,11 @@ final class SignalingClient {
     private let encoder = JSONEncoder()
     private var webSocket: WebSocketProvider
     private var webRTCClient: WebRTCClient
-    
+    private var sentAnswer: Bool = false
     weak var delegate: SignalClientDelegate?
     
-    init(url: URL) {
-        self.webRTCClient = WebRTCClient.init(iceServers: config.webRTCIceServers)
+    init(url: URL, webRTCClient: WebRTCClient) {
+        self.webRTCClient = webRTCClient
         if #available(iOS 13.0, *) {
             self.webSocket = NativeWebSocket(url: url)
         } else {
@@ -142,7 +142,7 @@ extension SignalingClient: WebSocketProviderDelegate {
     }
     
     func handleMessage(message: String){
-        print("we are in handleMessage")
+        //print("we are in handleMessage")
         
         // Print only the message string
         //print("Received message:", messageString)
@@ -153,29 +153,38 @@ extension SignalingClient: WebSocketProviderDelegate {
             if(messageType == "OFFER"){
                 let msg = payload["sdp"] as? [String: Any]
                 let sdp = msg?["sdp"]
-                print("Processed sdp:", sdp as Any)
-                let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
-                if #available(iOS 13.0, *) {
-                    Task {
-                                    await self.webRTCClient.setPeerSDP(sessionDescription, src) { connectionMessage in
-                                        if let connectionMessage = connectionMessage {
-                                            // Use connectionMessage here
-                                            print("Connection message:", connectionMessage)
-                                            do{
-                                                let jsonData = try JSONSerialization.data(withJSONObject: connectionMessage)
-                                                
-                                                self.webSocket.send(data: jsonData)
-                                            }
-                                            catch{
-                                                print("error with json", error)
-                                            }
-                                        } else {
-                                            print("Error: Could not set peer SDP")
+                
+                if(hasVideoMedia(sdp: sdp as! String)){
+                    print("Processed sdp:", sdp as Any)
+                    let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
+                    if #available(iOS 13.0, *) {
+                        Task {
+                            if(self.sentAnswer == false){
+                                self.sentAnswer = true
+                                await self.webRTCClient.setPeerSDP(sessionDescription, src) { connectionMessage in
+                                    if let connectionMessage = connectionMessage {
+                                        // Use connectionMessage here
+                                        //print("Connection message:", connectionMessage)
+                                        do{
+                                            let jsonData = try JSONSerialization.data(withJSONObject: connectionMessage)
+                                            
+                                            debugPrint("we sent our answer ", connectionMessage)
+                                            self.webSocket.send(data: jsonData)
+                                            
+                                            
                                         }
+                                        catch{
+                                            print("error with json", error)
+                                        }
+                                    } else {
+                                        print("Error: Could not set peer SDP")
                                     }
                                 }
-                } else {
-                    // Fallback on earlier versions
+                            }
+                        }
+                    } else {
+                        // Fallback on earlier versions
+                    }
                 }
             }
 
@@ -185,11 +194,22 @@ extension SignalingClient: WebSocketProviderDelegate {
         }
     }
     
+    func hasVideoMedia(sdp: String) -> Bool {
+            let sdpLines = sdp.components(separatedBy: .newlines)
+            for line in sdpLines {
+                if line.hasPrefix("m=video") {
+                    return true
+                }
+            }
+            return false
+        }
+    
+    
     func createCandidateRTC(_ webSocket: WebSocketProvider, sdp: String){
-        let candidate = RTCIceCandidate(sdp: sdp, sdpMLineIndex: 0,
-                                        sdpMid: "0")
-        
-        print("CANDIDATE SDP:", candidate)
+        let candidate = RTCIceCandidate(sdp: sdp, sdpMLineIndex: 1,
+                                        sdpMid: "1")
+       
+        //print("CANDIDATE SDP:", candidate)
         setRTCIceCandidate(candidate: candidate)
         
         
@@ -238,6 +258,11 @@ extension SignalingClient: WebSocketProviderDelegate {
                     print("Message type:", messageType)
                     print("Payload:", payload)
                     print("Source:", src)
+                    
+                    
+                    if(messageType == "CANDIDATE"){
+                        
+                    }
                 } else {
                     print("Error: Missing 'type', 'payload', or 'src' field(s) in the message")
                     return nil

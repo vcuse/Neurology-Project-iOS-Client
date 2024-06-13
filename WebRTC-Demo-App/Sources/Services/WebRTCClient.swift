@@ -39,12 +39,13 @@ final class WebRTCClient: NSObject {
     private let rtcAudioSession =  RTCAudioSession.sharedInstance()
     private let audioQueue = DispatchQueue(label: "audio")
     private let mediaConstrains = [kRTCMediaConstraintsOfferToReceiveAudio: kRTCMediaConstraintsValueTrue,
-                                   kRTCMediaConstraintsOfferToReceiveVideo: kRTCMediaConstraintsValueTrue]    
+                                   kRTCMediaConstraintsOfferToReceiveVideo: kRTCMediaConstraintsValueTrue, kRTCMediaStreamTrackKindVideo: kRTCMediaConstraintsValueTrue]
     private var videoCapturer: RTCVideoCapturer?
     private var localVideoTrack: RTCVideoTrack?
     private var remoteVideoTrack: RTCVideoTrack?
     private var localDataChannel: RTCDataChannel?
     private var remoteDataChannel: RTCDataChannel?
+    private var remoteVideoStreamTrack: RTCMediaStreamTrack?
 
     @available(*, unavailable)
     override init() {
@@ -74,9 +75,11 @@ final class WebRTCClient: NSObject {
         self.peerConnection = peerConnection
         
         super.init()
+        
         self.createMediaSenders()
         self.configureAudioSession()
         self.peerConnection.delegate = self
+        
     }
     
     // MARK: Signaling
@@ -87,7 +90,7 @@ final class WebRTCClient: NSObject {
         debugPrint("constrains are ", constrains as Any)
         self.peerConnection.offer(for: constrains) { (sdp, error) in
             guard let sdp = sdp else {
-                debugPrint("we are in the answer of webrtc error", sdp as Any)
+                //debugPrint("we are in the answer of webrtc error", sdp as Any)
                 return
             }
             debugPrint("we are in the offer of webrtc ", sdp as Any)
@@ -100,19 +103,23 @@ final class WebRTCClient: NSObject {
     
     @available(iOS 13.0.0, *)
     func setPeerSDP(_ remoteOffer: RTCSessionDescription,_ source: String, completion: @escaping ([String: Any]?)-> Void) async  {
+        let iceCandidate = RTCIceCandidate(sdp: remoteOffer.sdp, sdpMLineIndex: 1, sdpMid:"1")
         
         do {
-            debugPrint("remote description:", remoteOffer.description)
+            debugPrint("we are in setPeerSDP")
                try await self.peerConnection.setRemoteDescription(remoteOffer)
             
+            
+            
             answer { sdp in
-                debugPrint("Our answer SDP is:", sdp)
+                //debugPrint("Our answer SDP is:", sdp)
                 
                 let payload: [String: Any] = [
                     "sdp": sdp.sdp,
-                                "type": "ANSWER",
-                                "connectionId": "testConnectionID"
-                            ]
+                    "type": "media",
+                    
+                    "connectionId": "testConnectionID",]
+            
                 
                 let message: [String: Any] = [
                                 "type": "ANSWER",
@@ -120,12 +127,16 @@ final class WebRTCClient: NSObject {
                                 "dst": source
                             ]
                 completion(message)
+                
+                
             }
           
             
            } catch {
                debugPrint("error in setting peersdp", error)
            }
+        
+        
     }
     
     private func makeAnswer(){
@@ -150,9 +161,13 @@ final class WebRTCClient: NSObject {
                 //debugPrint("we are in the answer of webrtc")
                 completion(sdp)
                 
-                
+            
             })
         }
+        
+        
+      
+        
     }
     
     func set(remoteSdp: RTCSessionDescription, completion: @escaping (Error?) -> ()) {
@@ -270,6 +285,8 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
         debugPrint("peerConnection did add stream")
+        
+        
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
@@ -290,6 +307,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
+        debugPrint("peerConnection found a new candidate: \(candidate)")
         self.delegate?.webRTCClient(self, didDiscoverLocalCandidate: candidate)
     }
     
