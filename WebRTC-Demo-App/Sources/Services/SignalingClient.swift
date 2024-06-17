@@ -24,7 +24,7 @@ final class SignalingClient {
     private var webRTCClient: WebRTCClient
     private var sentAnswer: Bool = false
     weak var delegate: SignalClientDelegate?
-    private var mediaID = " "
+    private var theirSDP = " "
     
     init(url: URL, webRTCClient: WebRTCClient) {
         self.webRTCClient = webRTCClient
@@ -152,19 +152,32 @@ extension SignalingClient: WebSocketProviderDelegate {
             // Use messageType, payload, and src as needed
             print("Processed message type:", messageType)
             if(messageType == "CANDIDATE"){
-                let connectionID = payload["connectionId"] as? String
-                let candidateLine = payload["candidate"] as? [String: Any]
                 
-                self.mediaID = payload["connectionId"] as! String
+                //let mLineIndex = payload["sdpMLineIndex"] as! Int32
+                
+                //let sdpMid = payload["sdpMid"] as! String
+                
+                
+                //let candidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: mLineIndex, sdpMid: sdpMid)
+//                self.webRTCClient.set(remoteCandidate: candidate) { (error) in
+//                    if let error = error {
+//                        debugPrint("error adding ice canddiate: \(error.localizedDescription)")
+//                        debugPrint("candidate was ", candidate)
+//                    }
+//                }
+                //let connectionID = payload["connectionId"] as? String
+                //let candidateLine = payload["candidate"] as? [String: Any]
+                
+                //self.mediaID = payload["connectionId"] as! String
                 //let candidate = candidateLine!["candidate"] as? String
-                let payload: [String: Any] = ["candidate":candidateLine!, "type":"media","connectionId":connectionID!]
+                //let payload: [String: Any] = ["candidate":candidateLine!, "type":"media","connectionId":connectionID!]
                 
-                let candidateReponse: [String: Any] = ["type": "CANDIDATE", "payload": payload, "dst":src]
+                //let candidateReponse: [String: Any] = ["type": "CANDIDATE", "payload": payload, "dst":src]
                 do{
                     //let jsonData = try JSONSerialization.data( withJSONObject: candidateReponse)
                     
                     //self.webSocket.send(data: jsonData)
-                    debugPrint("we sent our candidate response ", candidateReponse)
+                    //debugPrint("we sent our candidate response ", candidateReponse)
                     
                 }
                 
@@ -172,11 +185,12 @@ extension SignalingClient: WebSocketProviderDelegate {
             if(messageType == "OFFER"){
                 let msg = payload["sdp"] as? [String: Any]
                 let sdp = msg?["sdp"]
-                
-                if(hasVideoMedia(sdp: sdp as! String)){
+                self.theirSDP = sdp as! String
+                let connectionID = payload["connectionId"] as! String
+                if(!hasVideoMedia(sdp: sdp as! String)){
                     print("Processed sdp:", sdp as Any)
                     let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
-            
+                    
                    
 
                     
@@ -185,7 +199,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                             
                             
                             
-                            await self.webRTCClient.setPeerSDP(sessionDescription, src, self.mediaID) { connectionMessage in
+                            await self.webRTCClient.setPeerSDP(sessionDescription, src, connectionID) { connectionMessage in
                                     if let connectionMessage = connectionMessage {
                                         // Use connectionMessage here
                                         //print("Connection message:", connectionMessage)
@@ -278,15 +292,17 @@ extension SignalingClient: WebSocketProviderDelegate {
                     payload = extractedPayload
                     src = extractedSrc
                     
+                    
+                    
+                    if(messageType == "CANDIDATE"){
+                        payload = (extractedPayload["candidate"] as? [String: Any])!
+                    }
+                    
                     // Print extracted information
                     print("Message type:", messageType)
                     print("Payload:", payload)
                     print("Source:", src)
                     
-                    
-                    if(messageType == "CANDIDATE"){
-                        
-                    }
                 } else {
                     print("Error: Missing 'type', 'payload', or 'src' field(s) in the message")
                     return nil

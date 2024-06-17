@@ -79,7 +79,8 @@ final class WebRTCClient: NSObject {
         self.createMediaSenders()
         self.configureAudioSession()
         self.peerConnection.delegate = self
-        
+        self.setVideoEnabled(true)
+
     }
     
     // MARK: Signaling
@@ -117,8 +118,7 @@ final class WebRTCClient: NSObject {
                     "sdp": sdpData,
                     "type": "media",
                     
-                    "connectionId": mediaId,
-                    "browser":"firefox"]
+                    "connectionId": mediaId,]
             
                 
                 let message: [String: Any] = [
@@ -179,7 +179,7 @@ final class WebRTCClient: NSObject {
     }
     
     func set(remoteCandidate: RTCIceCandidate, completion: @escaping (Error?) -> ()) {
-        //self.peerConnection.add(remoteCandidate, completionHandler: completion)
+        self.peerConnection.add(remoteCandidate, completionHandler: completion)
     }
     
     // MARK: Media
@@ -208,6 +208,7 @@ final class WebRTCClient: NSObject {
                               fps: Int(fps.maxFrameRate))
         
         self.localVideoTrack?.add(renderer)
+        
     }
     
     func renderRemoteVideo(to renderer: RTCVideoRenderer) {
@@ -289,7 +290,7 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
         debugPrint("peerConnection did add stream")
-        
+        self.remoteVideoStreamTrack = stream.videoTracks.first
         
     }
     
