@@ -24,6 +24,7 @@ final class SignalingClient {
     private var webRTCClient: WebRTCClient
     private var sentAnswer: Bool = false
     weak var delegate: SignalClientDelegate?
+    private var mediaID = " "
     
     init(url: URL, webRTCClient: WebRTCClient) {
         self.webRTCClient = webRTCClient
@@ -150,6 +151,24 @@ extension SignalingClient: WebSocketProviderDelegate {
         if let (messageType, payload, src) = processReceivedMessage(message: message) {
             // Use messageType, payload, and src as needed
             print("Processed message type:", messageType)
+            if(messageType == "CANDIDATE"){
+                let connectionID = payload["connectionId"] as? String
+                let candidateLine = payload["candidate"] as? [String: Any]
+                
+                self.mediaID = payload["connectionId"] as! String
+                //let candidate = candidateLine!["candidate"] as? String
+                let payload: [String: Any] = ["candidate":candidateLine!, "type":"media","connectionId":connectionID!]
+                
+                let candidateReponse: [String: Any] = ["type": "CANDIDATE", "payload": payload, "dst":src]
+                do{
+                    //let jsonData = try JSONSerialization.data( withJSONObject: candidateReponse)
+                    
+                    //self.webSocket.send(data: jsonData)
+                    debugPrint("we sent our candidate response ", candidateReponse)
+                    
+                }
+                
+            }
             if(messageType == "OFFER"){
                 let msg = payload["sdp"] as? [String: Any]
                 let sdp = msg?["sdp"]
@@ -157,16 +176,21 @@ extension SignalingClient: WebSocketProviderDelegate {
                 if(hasVideoMedia(sdp: sdp as! String)){
                     print("Processed sdp:", sdp as Any)
                     let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
+            
+                   
+
+                    
                     if #available(iOS 13.0, *) {
                         Task {
-                            if(self.sentAnswer == false){
-                                self.sentAnswer = true
-                                await self.webRTCClient.setPeerSDP(sessionDescription, src) { connectionMessage in
+                            
+                            
+                            
+                            await self.webRTCClient.setPeerSDP(sessionDescription, src, self.mediaID) { connectionMessage in
                                     if let connectionMessage = connectionMessage {
                                         // Use connectionMessage here
                                         //print("Connection message:", connectionMessage)
                                         do{
-                                            let jsonData = try JSONSerialization.data(withJSONObject: connectionMessage)
+                                            let jsonData = try JSONSerialization.data( withJSONObject: connectionMessage)
                                             
                                             debugPrint("we sent our answer ", connectionMessage)
                                             self.webSocket.send(data: jsonData)
@@ -179,7 +203,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                                     } else {
                                         print("Error: Could not set peer SDP")
                                     }
-                                }
+                        
                             }
                         }
                     } else {

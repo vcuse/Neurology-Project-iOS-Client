@@ -60,12 +60,12 @@ final class WebRTCClient: NSObject {
         config.sdpSemantics = .unifiedPlan
         
         // gatherContinually will let WebRTC to listen to any network changes and send any new candidates to the other client
-        config.continualGatheringPolicy = .gatherContinually
-        
+        config.continualGatheringPolicy = .gatherOnce
+        config.iceTransportPolicy = .all
         
         // Define media constraints. DtlsSrtpKeyAgreement is required to be true to be able to connect with web browsers.
         let constraints = RTCMediaConstraints(mandatoryConstraints: nil,
-                                              optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
+                                              optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue, "setup" : "actpass"])
         
         guard let peerConnection = WebRTCClient.factory.peerConnection(with: config, constraints: constraints, delegate: nil) else {
             debugPrint("peerconnection failed")
@@ -94,31 +94,31 @@ final class WebRTCClient: NSObject {
                 return
             }
             debugPrint("we are in the offer of webrtc ", sdp as Any)
-            self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
+            //self.peerConnection.setLocalDescription(sdp, completionHandler: { (error) in
                 
-                completion(sdp)
-            })
+                //completion(sdp)
+            //})
         }
     }
     
     @available(iOS 13.0.0, *)
-    func setPeerSDP(_ remoteOffer: RTCSessionDescription,_ source: String, completion: @escaping ([String: Any]?)-> Void) async  {
-        let iceCandidate = RTCIceCandidate(sdp: remoteOffer.sdp, sdpMLineIndex: 1, sdpMid:"1")
+    func setPeerSDP(_ remoteOffer: RTCSessionDescription,_ source: String, _ mediaId: String, completion: @escaping ([String: Any]?)-> Void) async  {
         
         do {
             debugPrint("we are in setPeerSDP")
-               try await self.peerConnection.setRemoteDescription(remoteOffer)
+               
             
-            
+            try await self.peerConnection.setRemoteDescription(remoteOffer)
             
             answer { sdp in
                 //debugPrint("Our answer SDP is:", sdp)
-                
+                let sdpData: [String: Any] = [ "type": "answer", "sdp": sdp.sdp, ]
                 let payload: [String: Any] = [
-                    "sdp": sdp.sdp,
+                    "sdp": sdpData,
                     "type": "media",
                     
-                    "connectionId": "testConnectionID",]
+                    "connectionId": mediaId,
+                    "browser":"firefox"]
             
                 
                 let message: [String: Any] = [
@@ -126,11 +126,15 @@ final class WebRTCClient: NSObject {
                                 "payload": payload,
                                 "dst": source
                             ]
+                
+                
+                
                 completion(message)
                 
                 
             }
-          
+            
+            //try await self.peerConnection.add(iceCandidate)
             
            } catch {
                debugPrint("error in setting peersdp", error)
