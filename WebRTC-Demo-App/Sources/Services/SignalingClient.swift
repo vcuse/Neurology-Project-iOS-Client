@@ -25,6 +25,10 @@ final class SignalingClient {
     private var sentAnswer: Bool = false
     weak var delegate: SignalClientDelegate?
     private var theirSDP = " "
+    private var mediaID = " "
+    private var candidateResponses: [Data] = []
+    
+    
     
     init(url: URL, webRTCClient: WebRTCClient) {
         self.webRTCClient = webRTCClient
@@ -153,41 +157,46 @@ extension SignalingClient: WebSocketProviderDelegate {
             print("Processed message type:", messageType)
             if(messageType == "CANDIDATE"){
                 
-                //let mLineIndex = payload["sdpMLineIndex"] as! Int32
-                
-                //let sdpMid = payload["sdpMid"] as! String
-                
-                
-                //let candidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: mLineIndex, sdpMid: sdpMid)
+//                let mLineIndex = payload["sdpMLineIndex"] as! Int32
+//                
+//                let sdpMid = payload["sdpMid"] as! String
+//                
+//                
+//                let candidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: mLineIndex, sdpMid: sdpMid)
 //                self.webRTCClient.set(remoteCandidate: candidate) { (error) in
 //                    if let error = error {
 //                        debugPrint("error adding ice canddiate: \(error.localizedDescription)")
 //                        debugPrint("candidate was ", candidate)
 //                    }
 //                }
-                //let connectionID = payload["connectionId"] as? String
-                //let candidateLine = payload["candidate"] as? [String: Any]
+               
+                //let candidateLine = payload["candidate"] as? String
                 
-                //self.mediaID = payload["connectionId"] as! String
-                //let candidate = candidateLine!["candidate"] as? String
-                //let payload: [String: Any] = ["candidate":candidateLine!, "type":"media","connectionId":connectionID!]
+              
                 
-                //let candidateReponse: [String: Any] = ["type": "CANDIDATE", "payload": payload, "dst":src]
+                let payload: [String: Any] = ["candidate":payload, "type":"media","connectionId":self.mediaID]
+                
+                let candidateReponse: [String: Any] = ["type": "CANDIDATE", "payload": payload, "dst":src]
                 do{
-                    //let jsonData = try JSONSerialization.data( withJSONObject: candidateReponse)
-                    
+                    let jsonData = try JSONSerialization.data( withJSONObject: candidateReponse)
+                    candidateResponses.append(jsonData)
                     //self.webSocket.send(data: jsonData)
                     //debugPrint("we sent our candidate response ", candidateReponse)
                     
+                }
+                
+                catch {
+                    debugPrint("Error ")
                 }
                 
             }
             if(messageType == "OFFER"){
                 let msg = payload["sdp"] as? [String: Any]
                 let sdp = msg?["sdp"]
-                self.theirSDP = sdp as! String
+                
                 let connectionID = payload["connectionId"] as! String
-                if(!hasVideoMedia(sdp: sdp as! String)){
+                if(hasVideoMedia(sdp: sdp as! String)){
+                    self.theirSDP = sdp as! String
                     print("Processed sdp:", sdp as Any)
                     let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
                     
@@ -197,7 +206,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                     if #available(iOS 13.0, *) {
                         Task {
                             
-                            
+                            await self.webRTCClient.setRemoteSDP(sessionDescription)
                             
                             await self.webRTCClient.setPeerSDP(sessionDescription, src, connectionID) { connectionMessage in
                                     if let connectionMessage = connectionMessage {
@@ -207,8 +216,9 @@ extension SignalingClient: WebSocketProviderDelegate {
                                             let jsonData = try JSONSerialization.data( withJSONObject: connectionMessage)
                                             
                                             debugPrint("we sent our answer ", connectionMessage)
+                                            self.sentAnswer = true
                                             self.webSocket.send(data: jsonData)
-                                            
+                                            self.sendStoredCandidates()
                                             
                                         }
                                         catch{
@@ -231,7 +241,11 @@ extension SignalingClient: WebSocketProviderDelegate {
             print("Failed to process received message")
         }
     }
-    
+    func sendStoredCandidates(){
+        for response in candidateResponses {
+            self.webSocket.send(data: response)
+        }
+    }
     func hasVideoMedia(sdp: String) -> Bool {
             let sdpLines = sdp.components(separatedBy: .newlines)
             for line in sdpLines {
@@ -281,6 +295,7 @@ extension SignalingClient: WebSocketProviderDelegate {
         }
         
         do {
+            
             // Deserialize the JSON data into a dictionary
             if let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
                 // Access the 'type', 'payload', and 'src' fields from the dictionary
@@ -296,6 +311,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                     
                     if(messageType == "CANDIDATE"){
                         payload = (extractedPayload["candidate"] as? [String: Any])!
+                        self.mediaID = (extractedPayload["connectionId"] as? String)!
                     }
                     
                     // Print extracted information

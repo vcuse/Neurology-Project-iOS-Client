@@ -103,13 +103,23 @@ final class WebRTCClient: NSObject {
     }
     
     @available(iOS 13.0.0, *)
+    func setRemoteSDP(_ remoteOffer: RTCSessionDescription) async{
+        do {
+            try await self.peerConnection.setRemoteDescription(remoteOffer)
+            
+        }
+        catch{
+            debugPrint("error in setting remoteSDP", error)
+
+        }
+    }
+    
+    @available(iOS 13.0.0, *)
     func setPeerSDP(_ remoteOffer: RTCSessionDescription,_ source: String, _ mediaId: String, completion: @escaping ([String: Any]?)-> Void) async  {
         
         do {
             debugPrint("we are in setPeerSDP")
                
-            
-            try await self.peerConnection.setRemoteDescription(remoteOffer)
             
             answer { sdp in
                 //debugPrint("Our answer SDP is:", sdp)
@@ -127,7 +137,7 @@ final class WebRTCClient: NSObject {
                                 "dst": source
                             ]
                 
-                
+            
                 
                 completion(message)
                 
@@ -136,8 +146,6 @@ final class WebRTCClient: NSObject {
             
             //try await self.peerConnection.add(iceCandidate)
             
-           } catch {
-               debugPrint("error in setting peersdp", error)
            }
         
         
@@ -313,7 +321,16 @@ extension WebRTCClient: RTCPeerConnectionDelegate {
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
         debugPrint("peerConnection found a new candidate: \(candidate)")
-        self.delegate?.webRTCClient(self, didDiscoverLocalCandidate: candidate)
+        self.peerConnection.add(candidate) { (error) in
+                            if let error = error {
+                                debugPrint("error adding ice canddiate: \(error.localizedDescription)")
+                                debugPrint("candidate was ", candidate)
+                            }
+            else{
+                debugPrint("Added Candidate")
+                
+            }
+                        }
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
