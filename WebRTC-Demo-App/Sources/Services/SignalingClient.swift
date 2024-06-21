@@ -24,7 +24,7 @@ final class SignalingClient: NSObject, RTCPeerConnectionDelegate {
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
         debugPrint("peerConnection did add stream")
         self.webRTCClient.remoteVideoTrack = stream.videoTracks.first
-       
+        
         
         //self.peerConnection.add(stream, streamIds: stream.stream)
         
@@ -47,6 +47,7 @@ final class SignalingClient: NSObject, RTCPeerConnectionDelegate {
         debugPrint("peerConnection new gathering state: \(newState)")
     }
     
+    //when the peerConnection (the connection to the other client thru the server) generates us a candidate, we have to send that candidate to the other client
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
         debugPrint("peerConnection found a new candidate: \(candidate)")
         let candidate: [String: Any] = ["candidate": candidate.sdp, "sdpMLineIndex" : candidate.sdpMLineIndex, "sdpMid": candidate.sdpMid as Any]
@@ -89,56 +90,61 @@ final class SignalingClient: NSObject, RTCPeerConnectionDelegate {
     private var connectionId = ""
     private var theirPeerID = " "
     
+    //Creating the websocket (connection to the signaling server)
+    // this will almost always be a native web socket
     init(url: URL, webRTCClient: WebRTCClient) {
         
         self.webRTCClient = webRTCClient
         if #available(iOS 13.0, *) {
             self.webSocket = NativeWebSocket(url: url)
+            
         } else {
-            self.webSocket = StarscreamWebSocket(url: url)
+            exit(0)
         }
         super.init()
-        if #available(iOS 13.0, *) {
+
+                if #available(iOS 13.0, *) {
             self.getAddress(url: url)
             
         } else {
             // Fallback on earlier versions
         }
-        
+        //the delegate is what handles messages from the peerConnection
+        //we are saying that the peerConnection messages will output to this class
         self.webRTCClient.peerConnection.delegate = self
     }
     
     @available(iOS 13.0, *)
     func getAddress(url: URL) -> Void {
         
-            //var uniqueID = ""
-            let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
-                                       port: 443,
-                                       path: "/",
-                                       key: "your_key_here",
-                                       secure: true)
-            
+        //var uniqueID = ""
+        let options = PeerJSOption(host: "videochat-signaling-app.ue.r.appspot.com",
+                                   port: 443,
+                                   path: "/",
+                                   key: "your_key_here",
+                                   secure: true)
+        
         let api = API(options: options, url: url)
         print(api.self)
         Task {
             await api.getAddress(url:url) { newUrl, error in
                 if let error = error {
-                                print("Error retrieving address: \(error)")
-                                // Handle the error in your API (e.g., return an error response)
-                            } else if let newUrl = newUrl {
-                                // Use the new URL in your API logic
-                                print("Received new URL from getAddress: \(newUrl)")
-                                guard let url = URL(string: newUrl) else { return }
-                                self.webSocket = NativeWebSocket(url: url)
-                                self.connect()
-                                
-
-                            }
+                    print("Error retrieving address: \(error)")
+                    // Handle the error in your API (e.g., return an error response)
+                } else if let newUrl = newUrl {
+                    // Use the new URL in your API logic
+                    print("Received new URL from getAddress: \(newUrl)")
+                    guard let url = URL(string: newUrl) else { return }
+                    self.webSocket = NativeWebSocket(url: url)
+                    self.connect()
+                    
+                    
+                }
             }
         }
-            
-            //print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
-     
+        
+        //print("Unique ID OUTSIDE OF CODE IS ", uniqueID)
+        
     }
     
     
@@ -187,7 +193,7 @@ extension SignalingClient: WebSocketProviderDelegate {
         }
     }
     
-
+    
     
     func webSocket(_ webSocket: WebSocketProvider, didReceiveData data: Data) {
         let message: Message
@@ -206,7 +212,7 @@ extension SignalingClient: WebSocketProviderDelegate {
         case .sdp(let sessionDescription):
             self.delegate?.signalClient(self, didReceiveRemoteSdp: sessionDescription.rtcSessionDescription)
         }
-
+        
     }
     
     func handleMessage(message: String){
@@ -220,22 +226,22 @@ extension SignalingClient: WebSocketProviderDelegate {
             print("Processed message type:", messageType)
             if(messageType == "CANDIDATE"){
                 
-//                let mLineIndex = payload["sdpMLineIndex"] as! Int32
-//                
-//                let sdpMid = payload["sdpMid"] as! String
-//                
-//                
-//                let candidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: mLineIndex, sdpMid: sdpMid)
-//                self.webRTCClient.set(remoteCandidate: candidate) { (error) in
-//                    if let error = error {
-//                        debugPrint("error adding ice canddiate: \(error.localizedDescription)")
-//                        debugPrint("candidate was ", candidate)
-//                    }
-//                }
-               
+                //                let mLineIndex = payload["sdpMLineIndex"] as! Int32
+                //
+                //                let sdpMid = payload["sdpMid"] as! String
+                //
+                //
+                //                let candidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: mLineIndex, sdpMid: sdpMid)
+                //                self.webRTCClient.set(remoteCandidate: candidate) { (error) in
+                //                    if let error = error {
+                //                        debugPrint("error adding ice canddiate: \(error.localizedDescription)")
+                //                        debugPrint("candidate was ", candidate)
+                //                    }
+                //                }
+                
                 //let candidateLine = payload["candidate"] as? String
                 
-              
+                
                 
                 let payload: [String: Any] = ["candidate":payload, "type":"media","connectionId":self.mediaID]
                 
@@ -254,6 +260,8 @@ extension SignalingClient: WebSocketProviderDelegate {
                 }
                 
             }
+            
+            // the offer message contains information about the client calling us (it has their sdp, and we will use it to create our answer)
             if(messageType == "OFFER"){
                 let msg = payload["sdp"] as? [String: Any]
                 let sdp = msg?["sdp"]
@@ -265,35 +273,36 @@ extension SignalingClient: WebSocketProviderDelegate {
                     print("Processed sdp:", sdp as Any)
                     let sessionDescription = RTCSessionDescription(type: RTCSdpType.offer, sdp: sdp as! String)
                     
-                  
-
+                    
+                    
                     
                     if #available(iOS 13.0, *) {
                         Task {
                             
                             
-                                //handleIceCandidates()
+                            //first we set the remote sdp (we received an offer)
                             await self.webRTCClient.setRemoteSDP(sessionDescription)
+                            //then we create an answer sdp
                             await self.webRTCClient.setPeerSDP(sessionDescription, src, connectionID) { connectionMessage in
-                                    if let connectionMessage = connectionMessage {
-                                        // Use connectionMessage here
-                                        //print("Connection message:", connectionMessage)
-                                        do{
-                                            let jsonData = try JSONSerialization.data( withJSONObject: connectionMessage)
-                                            
-                                            debugPrint("we sent our answer ", connectionMessage)
-                                            self.sentAnswer = true
-                                            self.webSocket.send(data: jsonData)
-                                            //self.sendStoredCandidates()
-                                            
-                                        }
-                                        catch{
-                                            print("error with json", error)
-                                        }
-                                    } else {
-                                        print("Error: Could not set peer SDP")
+                                if let connectionMessage = connectionMessage {
+                                    // Use connectionMessage here
+                                    //print("Connection message:", connectionMessage)
+                                    do{
+                                        let jsonData = try JSONSerialization.data( withJSONObject: connectionMessage)
+                                        //sending our answer sdp
+                                        debugPrint("we sent our answer ", connectionMessage)
+                                        self.sentAnswer = true
+                                        self.webSocket.send(data: jsonData)
+                                        //self.sendStoredCandidates()
+                                        
                                     }
-                        
+                                    catch{
+                                        print("error with json", error)
+                                    }
+                                } else {
+                                    print("Error: Could not set peer SDP")
+                                }
+                                
                             }
                         }
                     } else {
@@ -301,7 +310,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                     }
                 }
             }
-
+            
             print("Processed source:", src)
         } else {
             print("Failed to process received message")
@@ -309,18 +318,18 @@ extension SignalingClient: WebSocketProviderDelegate {
     }
     
     func handleIceCandidates(candidate: [String: Any]){
-
-            let candidatePayload = candidate["candidate"] as! [String: Any]
-            let iceCandidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: candidatePayload["sdpMLineIndex"] as! Int32, sdpMid: candidatePayload["sdpMid"] as? String)
-            self.webRTCClient.set(remoteCandidate: iceCandidate){error in
-                if let error = error {
-                    debugPrint("Error adding remote ICE candidate: \(error.localizedDescription)")
-                } else {
-                    debugPrint("Successfully added remote ICE candidate")
-                }
-                
-                
+        
+        let candidatePayload = candidate["candidate"] as! [String: Any]
+        let iceCandidate = RTCIceCandidate(sdp: self.theirSDP, sdpMLineIndex: candidatePayload["sdpMLineIndex"] as! Int32, sdpMid: candidatePayload["sdpMid"] as? String)
+        self.webRTCClient.set(remoteCandidate: iceCandidate){error in
+            if let error = error {
+                debugPrint("Error adding remote ICE candidate: \(error.localizedDescription)")
+            } else {
+                debugPrint("Successfully added remote ICE candidate")
             }
+            
+            
+        }
         
     }
     
@@ -330,20 +339,20 @@ extension SignalingClient: WebSocketProviderDelegate {
         }
     }
     func hasVideoMedia(sdp: String) -> Bool {
-            let sdpLines = sdp.components(separatedBy: .newlines)
-            for line in sdpLines {
-                if line.hasPrefix("m=video") {
-                    return true
-                }
+        let sdpLines = sdp.components(separatedBy: .newlines)
+        for line in sdpLines {
+            if line.hasPrefix("m=video") {
+                return true
             }
-            return false
         }
+        return false
+    }
     
     
     func createCandidateRTC(_ webSocket: WebSocketProvider, sdp: String){
         let candidate = RTCIceCandidate(sdp: sdp, sdpMLineIndex: 1,
                                         sdpMid: "1")
-       
+        
         //print("CANDIDATE SDP:", candidate)
         setRTCIceCandidate(candidate: candidate)
         
@@ -359,8 +368,8 @@ extension SignalingClient: WebSocketProviderDelegate {
             self.webSocket.send(data: dataMessage)
         }
         catch {
-                debugPrint("Warning: Could not encode candidate: \(error)")
-            }
+            debugPrint("Warning: Could not encode candidate: \(error)")
+        }
     }
     func processReceivedMessage(message: String) -> (String, [String: Any], String)? {
         // Print the received message
@@ -394,6 +403,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                     
                     if(messageType == "CANDIDATE"){
                         payload = (extractedPayload["candidate"] as? [String: Any])!
+                        //media id is the id used to determine what channel messages are sent thru
                         self.mediaID = (extractedPayload["connectionId"] as? String)!
                     }
                     
@@ -401,6 +411,7 @@ extension SignalingClient: WebSocketProviderDelegate {
                     print("Message type:", messageType)
                     print("Payload:", payload)
                     print("Source:", src)
+                    //storing their id for use later
                     self.theirPeerID = src
                 } else {
                     print("Error: Missing 'type', 'payload', or 'src' field(s) in the message")
