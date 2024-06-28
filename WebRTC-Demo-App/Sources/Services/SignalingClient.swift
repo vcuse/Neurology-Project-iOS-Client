@@ -61,7 +61,6 @@ final class SignalingClient: NSObject, RTCPeerConnectionDelegate {
             print("error with json", error)
         }
         
-        
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
