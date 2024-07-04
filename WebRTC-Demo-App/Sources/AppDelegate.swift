@@ -19,13 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.rootViewController = self.buildMainViewController()
         window.makeKeyAndVisible()
-        if #available(iOS 13.0, *) {
-            let incomingCallViewController = IncomingCallViewController()
-            window.rootViewController = incomingCallViewController
-            window.makeKeyAndVisible()
-        } else {
-            // Fallback on earlier versions
-        }
+        
         self.window = window
         return true
     }

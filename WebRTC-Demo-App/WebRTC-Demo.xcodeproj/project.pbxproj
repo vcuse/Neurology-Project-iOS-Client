@@ -11,7 +11,6 @@
 		0864FFB02C0E412E00EBA174 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864FFAF2C0E412E00EBA174 /* API.swift */; };
 		0864FFB22C0E41A400EBA174 /* PeerJSOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864FFB12C0E41A400EBA174 /* PeerJSOption.swift */; };
 		2F0D643D26FC644100CB9A47 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 2F0D643C26FC644100CB9A47 /* WebRTC */; };
-		2F2E228828E81A080026A8B5 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 2F2E228728E81A080026A8B5 /* Starscream */; };
 		2F7EBC3622DCC6430015B46E /* WebSocketProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7EBC3522DCC6430015B46E /* WebSocketProvider.swift */; };
 		2F7EBC3A22DCCE240015B46E /* NativeWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7EBC3922DCCE240015B46E /* NativeWebSocket.swift */; };
 		600C79FE2C3704D600CE2D10 /* IncomingCallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600C79FD2C3704D600CE2D10 /* IncomingCallViewController.swift */; };
@@ -65,7 +64,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F0D643D26FC644100CB9A47 /* WebRTC in Frameworks */,
-				2F2E228828E81A080026A8B5 /* Starscream in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,7 +206,6 @@
 			name = "WebRTC-Demo";
 			packageProductDependencies = (
 				2F0D643C26FC644100CB9A47 /* WebRTC */,
-				2F2E228728E81A080026A8B5 /* Starscream */,
 			);
 			productName = WebRTC;
 			productReference = 79262EE320B0D6F600D576C1 /* WebRTC-Demo.app */;
@@ -422,14 +419,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8MSLQL5SWW;
+				DEVELOPMENT_TEAM = VL7R24L9ZQ;
 				INFOPLIST_FILE = "$(SRCROOT)/SupportingFiles/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.stasel.WebRTCApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vcuse.WebRTC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -446,14 +443,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8MSLQL5SWW;
+				DEVELOPMENT_TEAM = VL7R24L9ZQ;
 				INFOPLIST_FILE = "$(SRCROOT)/SupportingFiles/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.stasel.WebRTCApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vcuse.WebRTC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -509,11 +506,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2F0D643B26FC644100CB9A47 /* XCRemoteSwiftPackageReference "WebRTC" */;
 			productName = WebRTC;
-		};
-		2F2E228728E81A080026A8B5 /* Starscream */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2F2E228628E81A080026A8B5 /* XCRemoteSwiftPackageReference "Starscream" */;
-			productName = Starscream;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
