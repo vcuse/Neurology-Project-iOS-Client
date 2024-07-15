@@ -17,6 +17,7 @@
 		2F7EBC3A22DCCE240015B46E /* NativeWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7EBC3922DCCE240015B46E /* NativeWebSocket.swift */; };
 		600C79FE2C3704D600CE2D10 /* IncomingCallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 600C79FD2C3704D600CE2D10 /* IncomingCallViewController.swift */; };
 		600C7A002C3704E700CE2D10 /* IncomingCallViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 600C79FF2C3704E700CE2D10 /* IncomingCallViewController.storyboard */; };
+		6099892D2C457FEC004FBD37 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6099892C2C457FEC004FBD37 /* CallKit.framework */; };
 		79177C9720B0DE7A00BCD399 /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79177C9620B0DE7A00BCD399 /* WebRTCClient.swift */; };
 		79177C9920B0DF2700BCD399 /* SignalingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79177C9820B0DF2700BCD399 /* SignalingClient.swift */; };
 		79177CA620B1F76E00BCD399 /* RTCStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79177CA520B1F76E00BCD399 /* RTCStates.swift */; };
@@ -43,6 +44,7 @@
 		2F7EBC3922DCCE240015B46E /* NativeWebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeWebSocket.swift; sourceTree = "<group>"; };
 		600C79FD2C3704D600CE2D10 /* IncomingCallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomingCallViewController.swift; sourceTree = "<group>"; };
 		600C79FF2C3704E700CE2D10 /* IncomingCallViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = IncomingCallViewController.storyboard; sourceTree = "<group>"; };
+		6099892C2C457FEC004FBD37 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		79177C9620B0DE7A00BCD399 /* WebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
 		79177C9820B0DF2700BCD399 /* SignalingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalingClient.swift; sourceTree = "<group>"; };
 		79177CA520B1F76E00BCD399 /* RTCStates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCStates.swift; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 			files = (
 				2F0D643D26FC644100CB9A47 /* WebRTC in Frameworks */,
 				2F2E228828E81A080026A8B5 /* Starscream in Frameworks */,
+				6099892D2C457FEC004FBD37 /* CallKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +94,14 @@
 				600C79FF2C3704E700CE2D10 /* IncomingCallViewController.storyboard */,
 			);
 			path = IncomingCallScreen;
+			sourceTree = "<group>";
+		};
+		6099892B2C457FEC004FBD37 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6099892C2C457FEC004FBD37 /* CallKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		79177C9A20B0E82B00BCD399 /* SupportingFiles */ = {
@@ -147,6 +158,7 @@
 				79177C9B20B0E84600BCD399 /* Resources */,
 				79177C9A20B0E82B00BCD399 /* SupportingFiles */,
 				79262EE420B0D6F600D576C1 /* Products */,
+				6099892B2C457FEC004FBD37 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
