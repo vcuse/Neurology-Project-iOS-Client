@@ -1,70 +1,103 @@
+import CallKit
 import UIKit
 
 @available(iOS 13.0, *)
 class IncomingCallViewController: UIViewController {
+    let callManager = CallManager()
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        setupUI()
+    func initiateOutgoingCall() {
+        callManager.startCall(handle: "recipient")
     }
     
-    private func setupUI() {
-        // Set background color
-        view.backgroundColor = UIColor.gray.withAlphaComponent(0.8)
-        
-        // Create and configure the label
-        let incomingCallLabel = UILabel()
-        incomingCallLabel.text = "Incoming Call..."
-        incomingCallLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        incomingCallLabel.textColor = .white
-        incomingCallLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(incomingCallLabel)
-        
-        // Create and configure the answer button
-        let answerButton = UIButton(type: .system)
-        let largeConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .large)
-        answerButton.setImage(UIImage(systemName: "phone.circle", withConfiguration: largeConfig), for: .normal)
-        answerButton.tintColor = .green
-        answerButton.translatesAutoresizingMaskIntoConstraints = false
-        answerButton.addTarget(self, action: #selector(answerButtonTapped), for: .touchUpInside)
-        view.addSubview(answerButton)
-        
-        // Create and configure the decline button
-        let declineButton = UIButton(type: .system)
-        declineButton.setImage(UIImage(systemName: "phone.down.circle.fill", withConfiguration: largeConfig), for: .normal)
-        declineButton.tintColor = .red
-        declineButton.translatesAutoresizingMaskIntoConstraints = false
-        declineButton.addTarget(self, action: #selector(declineButtonTapped), for: .touchUpInside)
-        view.addSubview(declineButton)
-        
-        // Set up constraints
-        NSLayoutConstraint.activate([
-            // Incoming Call Label
-            incomingCallLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            incomingCallLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            // Answer Button
-            answerButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            answerButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            answerButton.widthAnchor.constraint(equalToConstant: 100),
-            answerButton.heightAnchor.constraint(equalToConstant: 100),
-            
-            // Decline Button
-            declineButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
-            declineButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            declineButton.widthAnchor.constraint(equalToConstant: 100),
-            declineButton.heightAnchor.constraint(equalToConstant: 100)
-        ])
+    func simulateIncomingCall() {
+        let uuid = UUID()
+        callManager.reportIncomingCall(uuid: uuid, handle: "caller")
     }
     
-    @objc private func answerButtonTapped() {
-        // Handle answer button tap
-        print("Answer button tapped")
+    func endCurrentCall() {
+        // use uuid of current call
+        let uuid = UUID()
+        callManager.endCall(uuid: uuid)
     }
     
-    @objc private func declineButtonTapped() {
-        // Handle decline button tap
-        print("Decline button tapped")
+    
+}
+
+// set up the configuration for the call UI
+import CallKit
+
+class CallManager: NSObject, CXProviderDelegate {
+    let provider: CXProvider
+    let callController = CXCallController()
+    
+    override init() {
+        let configuration = CXProviderConfiguration(localizedName: "VideoChatApp")
+        configuration.supportsVideo = true
+        configuration.maximumCallsPerCallGroup = 1
+        configuration.supportedHandleTypes = [.generic]
+        
+        provider = CXProvider(configuration: configuration)
+        super.init()
+        provider.setDelegate(self, queue: nil)
+    }
+    
+    func providerDidReset(_ provider: CXProvider) {
+        // Handle provider reset if needed
+    }
+    
+    func startCall(handle: String) {
+        let handle = CXHandle(type: .generic, value: handle)
+        let startCallAction = CXStartCallAction(call: UUID(), handle: handle)
+        let transaction = CXTransaction(action: startCallAction)
+        
+        callController.request(transaction) { error in
+            if let error = error {
+                print("Error requesting transaction: \(error)")
+            } else {
+                print("Requested transaction successfully")
+            }
+        }
+    }
+    
+    func reportIncomingCall(uuid: UUID, handle: String, hasVideo: Bool = true) {
+        let update = CXCallUpdate()
+        update.remoteHandle = CXHandle(type: .generic, value: handle)
+        update.hasVideo = hasVideo
+        
+        provider.reportNewIncomingCall(with: uuid, update: update) { error in
+            if let error = error {
+                print("Error reporting incoming call: \(error)")
+            } else {
+                print("Incoming call successfully reported")
+            }
+        }
+    }
+    
+    func endCall(uuid: UUID) {
+        let endCallAction = CXEndCallAction(call: uuid)
+        let transaction = CXTransaction(action: endCallAction)
+        
+        callController.request(transaction) { error in
+            if let error = error {
+                print("Error ending call: \(error)")
+            } else {
+                print("Call ended successfully")
+            }
+        }
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        // Handle starting the call UI
+        action.fulfill()
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        // Handle answering the call UI
+        action.fulfill()
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        // Handle ending the call UI
+        action.fulfill()
     }
 }
