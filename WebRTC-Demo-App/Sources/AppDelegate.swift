@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.rootViewController = self.buildMainViewController()
         window.makeKeyAndVisible()
-            
+
         self.window = window
         return true
     }
@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func buildMainViewController() -> UIViewController {
         
         let webRTCClient = WebRTCClient(iceServers: self.config.webRTCIceServers)
-        let signalClient = self.buildSignalingClient()
+        let signalClient = self.buildSignalingClient(WebRTCClient: webRTCClient)
         let mainViewController = MainViewController(signalClient: signalClient, webRTCClient: webRTCClient)
         let navViewController = UINavigationController(rootViewController: mainViewController)
         navViewController.navigationBar.prefersLargeTitles = true
@@ -35,7 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     
-    private func buildSignalingClient() -> SignalingClient {
+    private func buildSignalingClient(WebRTCClient: WebRTCClient) -> SignalingClient {
         
         // iOS 13 has native websocket support. For iOS 12 or lower we will use 3rd party library.
 //        let webSocketProvider: WebSocketProvider
@@ -46,7 +46,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            webSocketProvider = StarscreamWebSocket(url: self.config.signalingServerUrl)
 //        }
         
-        return SignalingClient(url: self.config.signalingServerUrl)
+        return SignalingClient(url: self.config.signalingServerUrl, webRTCClient: WebRTCClient)
     }
 }
 

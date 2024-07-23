@@ -28,20 +28,8 @@ class StarscreamWebSocket: WebSocketProvider {
     }
 }
 
-extension StarscreamWebSocket: Starscream.WebSocketDelegate {
-    
-    func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocket) {
-        switch event {
-        case .connected:
-            self.delegate?.webSocketDidConnect(self)
-        case .disconnected:
-            self.delegate?.webSocketDidDisconnect(self)
-        case .text:
-            debugPrint("Warning: Expected to receive data format but received a string. Check the websocket server config.")
-        case .binary(let data):
-            self.delegate?.webSocket(self, didReceiveData: data)
-        default:
-            break
-        }
-    }
+
+func didReceive(event: Starscream.WebSocketEvent, client: any Starscream.WebSocketClient) {
+    <#code#>
 }
+

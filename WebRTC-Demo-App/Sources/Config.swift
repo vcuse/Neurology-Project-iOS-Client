@@ -12,11 +12,7 @@ import Foundation
 fileprivate let defaultSignalingServerUrl = URL(string: "wss://videochat-signaling-app.ue.r.appspot.com:443")!
 
 // We use Google's public stun servers. For production apps you should deploy your own stun/turn servers.
-fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302",
-                                     "stun:stun1.l.google.com:19302",
-                                     "stun:stun2.l.google.com:19302",
-                                     "stun:stun3.l.google.com:19302",
-                                     "stun:stun4.l.google.com:19302"]
+fileprivate let defaultIceServers = ["stun:stun.l.google.com:19302"]
 
 struct Config {
     let signalingServerUrl: URL
